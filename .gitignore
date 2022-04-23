@@ -1,0 +1,3 @@
+# ignore this while pushing file in github
+.env
+node_modules
