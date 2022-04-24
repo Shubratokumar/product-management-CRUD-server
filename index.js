@@ -1,6 +1,6 @@
 // Server for Product Management system
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 require('dotenv').config()
 const cors = require("cors")
@@ -31,16 +31,47 @@ async function run() {
             const products = await cursor.toArray();
             res.send(products);
         })
-        // POST : post to DB
-        /* app.post('/product', async(req,res)=>{
-            const product = {
-                name: "Redmi Note 10",
-                price: 999,
-                quantity : 2
-            }
-            const result = await productCollection.insertOne(product);
-            res.send(result)
-        }) */
+
+        // Update a product 
+        app.get('/update/:id', async(req,res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await productCollection.findOne(query);
+            res.send(result);
+        })
+
+        // POST : data collect from client side and post to DB
+        app.post('/product', async(req,res)=>{
+            const newProduct = req.body;
+            const result = await productCollection.insertOne(newProduct);
+            res.send(result);
+        })
+
+        // DELETE : delete a product from the database as well as from UI
+        app.delete('/product/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await productCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        // UPDATE : put update a product
+        app.put('/update/:id', async(req, res)=>{
+            const id = req.params.id;
+            const updateProduct = req.body;
+            // create a filter for a product to update
+            const filter = {_id: ObjectId(id)};
+            const options = { upsert : true};
+            const updateDoc = {
+                $set : {
+                    name: updateProduct.name,
+                    Price : updateProduct.Price,
+                    Quantity : updateProduct.Quantity
+                },
+            };
+            const result = await productCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
 
 
 
